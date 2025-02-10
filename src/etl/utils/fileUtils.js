@@ -1,5 +1,5 @@
 import fs from 'fs-extra';
-import { logger } from './logger.js';
+import { logger } from '../../utils/logger.js';
 
 const readJsonFile = async (filePath) => {
     try {

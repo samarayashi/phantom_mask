@@ -1,5 +1,5 @@
 import { DataTypes } from 'sequelize';
-import { getDB } from '../tools/db.js';
+import { getDB } from '../utils/db.js';
 
 const definePharmacy = (sequelize) => {
     const Pharmacy = sequelize.define('Pharmacy', {

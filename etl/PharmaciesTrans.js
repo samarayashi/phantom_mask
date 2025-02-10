@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import { logger } from '../utils/logger.js';
-import { readJsonFile } from './utils/fileUtils.js';
+import { logger } from '../src/utils/logger.js';
+import { readJsonFile } from '../src/etl/utils/fileUtils.js';
 import getPharmacyModel from '../models/Pharmacy.js';
-import { getDB } from '../utils/db.js';
+import { getDB } from '../src/utils/db.js';
 
 const transformPharmacyData = (pharmacy) => {
     return {
