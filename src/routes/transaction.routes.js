@@ -17,4 +17,10 @@ router.get('/statistics',
     transactionController.getStatistics
 );
 
+router.post('/purchase',
+    transactionValidator.validatePurchase,
+    validate,
+    transactionController.purchase
+);
+
 export default router; 

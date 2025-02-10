@@ -11,17 +11,8 @@ const configureSequelizeLogging = () => {
         return false;
     }
     
-    // 開發環境下，只輸出簡化的 SQL 查詢信息
+    // 開發環境下，輸出 SQL 查詢信息
     return (msg) => {
-        // 對於批量插入操作，簡化輸出
-        if (msg.includes('INSERT INTO') && msg.length > 200) {
-            const tableName = msg.match(/INSERT INTO `(\w+)`/)[1];
-            const valuesCount = (msg.match(/VALUES/g) || []).length;
-            logger.debug(`Executing batch insert into ${tableName}, processing ${valuesCount} records`);
-            return;
-        }
-        
-        // 對於其他查詢，保持原樣輸出
         logger.debug(msg);
     };
 };

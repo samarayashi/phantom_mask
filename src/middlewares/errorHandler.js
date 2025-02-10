@@ -25,10 +25,27 @@ export class ValidationError extends AppError {
     }
 }
 
+// 資料庫錯誤
 export class DatabaseError extends AppError {
     constructor(message) {
         super(500, message);
         this.isOperational = false;  // 資料庫錯誤通常不是可預期的操作錯誤
+    }
+}
+
+// 餘額不足錯誤
+export class InsufficientFundsError extends AppError {
+    constructor(message = 'Insufficient funds') {
+        super(400, message);
+        this.name = 'InsufficientFundsError';
+    }
+}
+
+// 庫存不足錯誤
+export class InsufficientStockError extends AppError {
+    constructor(message = 'Insufficient stock') {
+        super(400, message);
+        this.name = 'InsufficientStockError';
     }
 }
 

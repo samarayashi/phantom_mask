@@ -1,6 +1,10 @@
-import { getDB } from '../utils/db.js';
+import { getDB, getModels } from '../utils/db.js';
 import { logger } from '../utils/logger.js';
-import { DatabaseError } from '../middlewares/errorHandler.js';
+import { 
+    DatabaseError, 
+    InsufficientFundsError, 
+    InsufficientStockError 
+} from '../middlewares/errorHandler.js';
 
 export const findTopUsers = async (startDate, endDate, limit = 10) => {
     const sequelize = getDB();
@@ -72,5 +76,138 @@ export const getTransactionStatistics = async (startDate, endDate) => {
     } catch (error) {
         logger.error('Error in getTransactionStatistics service:', error);
         throw new DatabaseError('Failed to fetch transaction statistics');
+    }
+};
+
+export const processPurchase = async (userId, pharmacyInventoryId, quantity) => {
+    const sequelize = getDB();
+    const { User, PharmacyInventory } = getModels();
+    const transaction = await sequelize.transaction();
+    
+    try {
+        // 1. 檢查並鎖定用戶記錄
+        const user = await User.findByPk(userId, {
+            attributes: ['id', 'cash_balance'],
+            lock: true,
+            transaction
+        });
+
+        if (!user) {
+            throw new DatabaseError('User not found');
+        }
+
+        // 2. 檢查並鎖定庫存記錄
+        const [inventory] = await sequelize.query(`
+            SELECT 
+                pi.id,
+                pi.stock,
+                pi.price,
+                p.id as pharmacy_id,
+                p.cash_balance as pharmacy_balance
+            FROM 
+                PharmacyInventory pi
+                left JOIN Pharmacies p ON pi.pharmacy_id = p.id
+            WHERE 
+                pi.id = :pharmacyInventoryId
+            FOR UPDATE
+        `, {
+            replacements: { pharmacyInventoryId },
+            type: sequelize.QueryTypes.SELECT,
+            transaction
+        });
+
+        if (!inventory) {
+            throw new DatabaseError('Inventory not found');
+        }
+
+        // 3. 業務邏輯檢查
+        if (inventory.stock < quantity) {
+            throw new InsufficientStockError();
+        }
+
+        const totalAmount = inventory.price * quantity;
+
+        if (user.cash_balance < totalAmount) {
+            throw new InsufficientFundsError();
+        }
+
+        // 4. 執行交易更新
+        // 4.1 更新庫存
+        await PharmacyInventory.update({
+            stock: inventory.stock - quantity
+        }, {
+            where: { id: pharmacyInventoryId },
+            transaction
+        });
+
+        // 4.2 更新藥局餘額
+        await sequelize.query(`
+            UPDATE Pharmacies 
+            SET cash_balance = cash_balance + :totalAmount 
+            WHERE id = :pharmacyId;
+        `, {
+            replacements: { 
+                totalAmount, 
+                pharmacyId: inventory.pharmacy_id
+            },
+            transaction
+        });
+
+        // 4.2 更新用戶餘額
+        await sequelize.query(`
+            UPDATE Users 
+            SET cash_balance = cash_balance - :totalAmount 
+            WHERE id = :userId;
+        `, {
+            replacements: { 
+                totalAmount, 
+                userId
+            },
+            transaction
+        });
+
+        // 4.3 創建交易記錄
+        await sequelize.query(`
+            INSERT INTO PurchaseRecords (
+                user_id,
+                pharmacy_id,
+                pharmacy_inventory_id,
+                transaction_amount,
+                quantity,
+                transaction_date,
+                status
+            ) VALUES (
+                :userId,
+                :pharmacyId,
+                :pharmacyInventoryId,
+                :totalAmount,
+                :quantity,
+                NOW(),
+                'success'
+            )
+        `, {
+            replacements: {
+                userId,
+                pharmacyId: inventory.pharmacy_id,
+                pharmacyInventoryId,
+                totalAmount,
+                quantity
+            },
+            type: sequelize.QueryTypes.INSERT,
+            transaction
+        });
+
+        await transaction.commit();
+
+        // 5. 返回交易結果
+        return {
+            totalAmount,
+            quantity,
+            status: 'success'
+        };
+    } catch (error) {
+        await transaction.rollback();
+        logger.error('Error in processPurchase service:', error);
+        throw error;
     }
 }; 

@@ -1,4 +1,5 @@
 import { query } from 'express-validator';
+import { body } from 'express-validator';
 
 export const validateDateRange = [
     query('startDate')
@@ -19,4 +20,18 @@ export const validateDateRange = [
         .optional()
         .isInt({ min: 1, max: 100 })
         .withMessage('Limit must be between 1 and 100')
+];
+
+export const validatePurchase = [
+    body('userId')
+        .isInt({ min: 1 })
+        .withMessage('Invalid user ID'),
+    
+    body('pharmacyInventoryId')
+        .isInt({ min: 1 })
+        .withMessage('Invalid pharmacy inventory ID'),
+    
+    body('quantity')
+        .isInt({ min: 1 })
+        .withMessage('Quantity must be at least 1')
 ]; 
