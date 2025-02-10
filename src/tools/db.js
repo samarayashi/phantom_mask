@@ -26,6 +26,22 @@ const configureSequelizeLogging = () => {
     };
 };
 
+// Raw SQL 查詢配置
+const rawQueryConfig = {
+    type: Sequelize.QueryTypes.SELECT,
+    logging: (sql) => logger.debug('Executing raw query', { sql: sql.substring(0, 100) + '...' })
+};
+
+const executeRawQuery = async (sql, options = {}) => {
+    if (!sequelize) {
+        throw new Error('Database not initialized. Call initDB() first.');
+    }
+    return sequelize.query(sql, {
+        ...rawQueryConfig,
+        ...options
+    });
+};
+
 const initDB = async () => {
     try {
         if (!sequelize) {
@@ -104,4 +120,4 @@ const getModels = () => {
     return models;
 };
 
-export { initDB, getDB, initializeModels, getModels }; 
+export { initDB, getDB, initializeModels, getModels, executeRawQuery }; 
