@@ -1,0 +1,118 @@
+/transactions/top-users:
+  get:
+    tags:
+      - Transactions
+    summary: Get top users by mask purchase quantity
+    description: List users who purchased the most masks within a date range
+    parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+        description: Start date (YYYY-MM-DD)
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+        description: End date (YYYY-MM-DD)
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 10
+        description: Number of top users to return
+    responses:
+      '200':
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [success]
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      userId:
+                        type: integer
+                        description: User ID
+                      name:
+                        type: string
+                        description: User name
+                      totalMasks:
+                        type: integer
+                        description: Total number of masks purchased
+                meta:
+                  type: object
+                  properties:
+                    startDate:
+                      type: string
+                      format: date
+                    endDate:
+                      type: string
+                      format: date
+                    total:
+                      type: integer
+
+/transactions/statistics:
+  get:
+    tags:
+      - Transactions
+    summary: Get transaction statistics within a date range
+    description: Get total masks sold and total transaction amount
+    parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+        description: Start date (YYYY-MM-DD)
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+        description: End date (YYYY-MM-DD)
+    responses:
+      '200':
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [success]
+                data:
+                  type: object
+                  properties:
+                    totalMasks:
+                      type: integer
+                      description: Total number of masks sold
+                    totalAmount:
+                      type: number
+                      format: float
+                      description: Total transaction amount
+                meta:
+                  type: object
+                  properties:
+                    startDate:
+                      type: string
+                      format: date
+                    endDate:
+                      type: string
+                      format: date
+
+# ... 其他交易相關 API 

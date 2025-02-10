@@ -2,12 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
-import swaggerUi from 'swagger-ui-express';
-import YAML from 'yamljs';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { dirname } from 'path';
 import { logger } from './utils/logger.js';
 import { initializeModels } from './utils/db.js';
+import { setupSwagger } from './config/swagger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -30,9 +29,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// Swagger 配置
-const swaggerDocument = YAML.load(join(__dirname, '../docs/swagger/openapi.yaml'));
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// 設置 Swagger 文檔
+setupSwagger(app);
 
 // API 路由
 app.use('/api/pharmacies', (await import('./routes/pharmacy.routes.js')).default);
