@@ -1,19 +1,19 @@
 import { DataTypes } from 'sequelize';
-import { getDB } from '../lib/db.js';
+import { getDB } from '../tools/db.js';
 
-const defineUser = (sequelize) => {
-    const User = sequelize.define('User', {
+const definePharmacy = (sequelize) => {
+    const Pharmacy = sequelize.define('Pharmacy', {
         id: {
             type: DataTypes.BIGINT.UNSIGNED,
             primaryKey: true,
             autoIncrement: true,
-            comment: '用戶ID'
+            comment: '藥局ID'
         },
         name: {
             type: DataTypes.STRING(255),
             allowNull: false,
             unique: true,
-            comment: '用戶名稱'
+            comment: '藥局名稱'
         },
         cash_balance: {
             type: DataTypes.DECIMAL(10, 2),
@@ -22,22 +22,22 @@ const defineUser = (sequelize) => {
             comment: '現金餘額'
         }
     }, {
-        tableName: 'Users',
+        tableName: 'Pharmacies',
         timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at'
     });
 
-    return User;
+    return Pharmacy;
 };
 
-let UserModel = null;
+let PharmacyModel = null;
 
-const getUserModel = () => {
-    if (!UserModel) {
-        UserModel = defineUser(getDB());
+const getPharmacyModel = () => {
+    if (!PharmacyModel) {
+        PharmacyModel = definePharmacy(getDB());
     }
-    return UserModel;
+    return PharmacyModel;
 };
 
-export default getUserModel; 
+export default getPharmacyModel; 

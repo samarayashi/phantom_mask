@@ -1,5 +1,5 @@
 import { DataTypes } from 'sequelize';
-import { getDB } from '../lib/db.js';
+import { getDB } from '../tools/db.js';
 
 const defineMask = (sequelize) => {
     const Mask = sequelize.define('Mask', {

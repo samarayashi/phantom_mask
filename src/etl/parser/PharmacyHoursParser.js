@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import moment from 'moment';
-import { logger } from '../lib/logger.js';
+import { logger } from '../../tools/logger.js';
 
 const DAY_MAPPING = {
     'Mon': 1,

@@ -53,12 +53,12 @@ const initializeModels = async () => {
         getPurchaseRecordModel,
         getUserModel
     ] = await Promise.all([
-        import('../models/Mask.js'),
-        import('../models/Pharmacy.js'),
-        import('../models/PharmacyHours.js'),
-        import('../models/PharmacyInventory.js'),
-        import('../models/PurchaseRecord.js'),
-        import('../models/User.js')
+        import('../../models/Mask.js'),
+        import('../../models/Pharmacy.js'),
+        import('../../models/PharmacyHours.js'),
+        import('../../models/PharmacyInventory.js'),
+        import('../../models/PurchaseRecord.js'),
+        import('../../models/User.js')
     ]).then(modules => modules.map(m => m.default));
 
     // 初始化所有模型

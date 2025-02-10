@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import { logger } from '../lib/logger.js';
-import { readJsonFile } from '../lib/fileUtils.js';
-import { getModels, getDB } from '../lib/db.js';
-import { parseOpeningHours } from './PharmacyHoursParser.js';
+import { logger } from '../tools/logger.js';
+import { readJsonFile } from '../tools/fileUtils.js';
+import { getModels, getDB } from '../tools/db.js';
+import { parseOpeningHours } from './parser/PharmacyHoursParser.js';
 
 const transformPharmacyHours = async () => {
     try {
