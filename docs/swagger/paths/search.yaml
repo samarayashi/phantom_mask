@@ -1,0 +1,122 @@
+/search:
+  get:
+    tags:
+      - Search
+    summary: Search pharmacies or masks by name
+    description: Search and rank results by relevance to the search term
+    parameters:
+      - name: type
+        in: query
+        required: true
+        schema:
+          type: string
+          enum: [pharmacy, mask]
+        description: Type of search (pharmacy or mask)
+      - name: keyword
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 2
+        description: Search keyword
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+        description: Number of results to return
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: Number of results to skip
+    responses:
+      '200':
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [success]
+                data:
+                  type: array
+                  items:
+                    oneOf:
+                      - type: object
+                        properties:
+                          id:
+                            type: integer
+                          name:
+                            type: string
+                          relevance:
+                            type: number
+                            description: Search relevance score
+                      - type: object
+                        properties:
+                          id:
+                            type: integer
+                          name:
+                            type: string
+                          brand:
+                            type: string
+                          color:
+                            type: string
+                          relevance:
+                            type: number
+                            description: Search relevance score
+                meta:
+                  type: object
+                  properties:
+                    total:
+                      type: integer
+                      description: Total number of matching results
+                    limit:
+                      type: integer
+                      description: Number of results per page
+                    offset:
+                      type: integer
+                      description: Number of results skipped
+      '400':
+        description: Bad Request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [error]
+                message:
+                  type: string
+                errors:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      param:
+                        type: string
+                      msg:
+                        type: string
+                      value:
+                        type: string
+      '500':
+        description: Internal Server Error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [error]
+                message:
+                  type: string 

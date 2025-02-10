@@ -82,4 +82,10 @@ CREATE TABLE IF NOT EXISTS PurchaseRecords (
     FOREIGN KEY (pharmacy_inventory_id) REFERENCES PharmacyInventory(id) ON DELETE CASCADE
 ) ENGINE=InnoDB COMMENT='購買交易紀錄表';
 
+-- 在 Pharmacies 表添加全文索引
+ALTER TABLE Pharmacies ADD FULLTEXT INDEX idx_pharmacy_name (name);
+
+-- 在 Masks 表添加全文索引
+ALTER TABLE Masks ADD FULLTEXT INDEX idx_mask_brand (brand);
+
 SET FOREIGN_KEY_CHECKS = 1; 
