@@ -1,6 +1,5 @@
 import { DataTypes } from 'sequelize';
 import { getDB } from '../utils/db.js';
-import getPharmacyModel from './Pharmacy.js';
 
 const definePharmacyHours = (sequelize) => {
     const PharmacyHours = sequelize.define('PharmacyHours', {
@@ -40,19 +39,7 @@ const definePharmacyHours = (sequelize) => {
         tableName: 'PharmacyHours',
         timestamps: true,
         createdAt: 'created_at',
-        updatedAt: 'updated_at',
-        indexes: [
-            {
-                name: 'idx_pharmacy_day',
-                fields: ['pharmacy_id', 'day_of_week']
-            }
-        ]
-    });
-
-    const Pharmacy = getPharmacyModel();
-    PharmacyHours.belongsTo(Pharmacy, {
-        foreignKey: 'pharmacy_id',
-        onDelete: 'CASCADE'
+        updatedAt: 'updated_at'
     });
 
     return PharmacyHours;

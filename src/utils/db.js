@@ -107,6 +107,10 @@ const initializeModels = async () => {
     models.PurchaseRecord = getPurchaseRecordModel();
     models.User = getUserModel();
 
+    // 初始化模型關聯
+    const { initializeAssociations } = await import('../models/init-models.js');
+    await initializeAssociations();
+
     logger.info('All models initialized successfully');
     
     return models;
