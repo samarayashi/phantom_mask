@@ -1,0 +1,21 @@
+{
+  "name": "pharmacy-etl",
+  "type": "module",
+  "scripts": {
+    "start": "node run.js",
+    "dev": "nodemon run.js",
+    "test_etl": "node test/testETL.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "fs-extra": "^11.1.0",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "mysql2": "^3.2.0",
+    "sequelize": "^6.37.5",
+    "winston": "^3.8.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
