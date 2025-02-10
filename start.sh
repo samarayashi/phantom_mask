@@ -44,8 +44,16 @@ echo "驗證數據庫初始化..."
 TABLES_COUNT=$(docker-compose exec -T mysql mysql -h"localhost" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" "${MYSQL_DATABASE}" -N -e "SHOW TABLES;" | wc -l)
 
 if [ "$TABLES_COUNT" -eq 0 ]; then
-    echo "警告：數據庫表格未正確創建，嘗試手動執行初始化..."
-    docker-compose exec -T mysql mysql -h"localhost" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" "${MYSQL_DATABASE}" < mysql/init/01-schema.sql
+    echo "警告：數據庫表格未正確創建"
+    echo "這種情況通常不應該發生，因為應該由 Docker 自動初始化"
+    echo "正在嘗試手動修復..."
+    if docker-compose exec -T mysql mysql -h"localhost" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" "${MYSQL_DATABASE}" < mysql/init/01-schema.sql; then
+        echo "手動初始化成功完成"
+    else
+        echo "錯誤：手動初始化失敗"
+        echo "請檢查數據庫連接設置和初始化腳本"
+        exit 1
+    fi
 fi
 
 # 顯示數據庫信息
