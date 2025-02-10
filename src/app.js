@@ -36,8 +36,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // API 路由
 app.use('/api/pharmacies', (await import('./routes/pharmacy.routes.js')).default);
+app.use('/api/transactions', (await import('./routes/transaction.routes.js')).default);
 // app.use('/api/masks', (await import('./routes/mask.routes.js')).default);
-// app.use('/api/transactions', (await import('./routes/transaction.routes.js')).default);
 
 // 錯誤處理中間件
 app.use((err, req, res, next) => {
