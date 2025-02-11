@@ -26,46 +26,56 @@
         content:
           application/json:
             schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: 藥局ID
+                    example: 18
+                  name:
+                    type: string
+                    description: 藥局名稱
+                    example: "Blink Health"
+                  day_of_week:
+                    type: integer
+                    description: 營業日（1-7）
+                    example: 1
+                  open_time:
+                    type: string
+                    format: time
+                    description: 開始營業時間
+                    example: "08:00:00"
+                  close_time:
+                    type: string
+                    format: time
+                    description: 結束營業時間
+                    example: "17:00:00"
+      '400':
+        description: 請求參數錯誤
+        content:
+          application/json:
+            schema:
               type: object
               properties:
                 status:
                   type: string
-                  enum: [success]
-                data:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                        format: int64
-                      name:
-                        type: string
-                      cash_balance:
-                        type: number
-                        format: float
-                      businessHours:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            day_of_week:
-                              type: integer
-                              minimum: 1
-                              maximum: 7
-                            open_time:
-                              type: string
-                              format: time
-                            close_time:
-                              type: string
-                              format: time
-                            is_open:
-                              type: boolean
-                meta:
-                  type: object
-                  properties:
-                    total:
-                      type: integer
+                  enum: [error]
+                message:
+                  type: string
+      '500':
+        description: 服務器內部錯誤
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [error]
+                message:
+                  type: string
 
 /pharmacies/search:
   get:

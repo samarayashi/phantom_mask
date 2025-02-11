@@ -1,30 +1,23 @@
-import { getModels } from '../utils/db.js';
+import { getModels, getDB } from '../utils/db.js';
 import { Op } from 'sequelize';
 import { logger } from '../utils/logger.js';
 import { AppError, NotFoundError, DatabaseError } from '../middlewares/errorHandler.js';
-import { getDB } from '../utils/db.js';
+
 
 export const findOpenPharmacies = async (time, dayOfWeek) => {
-    const { Pharmacy, PharmacyHours } = getModels();
-    
+    const sequelize = getDB();
     try {
-        const pharmacies = await Pharmacy.findAll({
-            include: [{
-                model: PharmacyHours,
-                as: 'businessHours',
-                where: {
-                    day_of_week: dayOfWeek,
-                    is_open: true,
-                    open_time: {
-                        [Op.lte]: time
-                    },
-                    close_time: {
-                        [Op.gt]: time
-                    }
-                },
-                required: true
-            }]
-        });
+        const pharmacies = await sequelize.query(
+            `SELECT p.id, p.name, ph.day_of_week, ph.open_time, ph.close_time
+            FROM Pharmacies p
+            LEFT JOIN PharmacyHours ph ON p.id = ph.pharmacy_id
+            WHERE ph.day_of_week = :dayOfWeek 
+                AND ph.open_time <= :time AND ph.close_time > :time`,
+            {
+                replacements: { dayOfWeek, time },
+                type: sequelize.QueryTypes.SELECT
+            }
+        );
 
         return pharmacies;
     } catch (error) {
