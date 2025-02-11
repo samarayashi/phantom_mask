@@ -34,7 +34,8 @@ app.use('/api/pharmacies', (await import('./routes/pharmacy.routes.js')).default
 app.use('/api/transactions', (await import('./routes/transaction.routes.js')).default);
 app.use('/api/search', (await import('./routes/search.routes.js')).default);
 app.use('/api/users', (await import('./routes/user.routes.js')).default);
-
+// health check
+app.use('/api/health', (await import('./routes/health.routes.js')).default);
 // 錯誤處理中間件
 app.use((err, req, res, next) => {
     // 增強錯誤日誌
