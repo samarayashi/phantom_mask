@@ -31,6 +31,7 @@
 ### A.2. API 文件
 - 本地開發環境：http://localhost:3000/api-docs
 - 線上部署環境：https://phantom-mask-hw2y.onrender.com/api-docs
+  (free instance冷啟動需要一點時間)
 
 ## B. 技術實現
 
