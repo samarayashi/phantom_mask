@@ -5,8 +5,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "migrate_db": "node src/migrations/index.js",
-    "test_etl": "node test/testETL.js"
+    "test_etl": "node src/etl/index.js"
   },
   "dependencies": {
     "compression": "^1.7.4",
