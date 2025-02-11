@@ -1,73 +1,156 @@
-# Response
-> The Current content is an **example template**; please edit it to fit your style and content.
-## A. Required Information
-### A.1. Requirement Completion Rate
-- [x] List all pharmacies open at a specific time and on a day of the week if requested.
-  - Implemented at xxx API.
-- [x] List all masks sold by a given pharmacy, sorted by mask name or price.
-  - Implemented at xxx API.
-- [x] List all pharmacies with more or less than x mask products within a price range.
-  - Implemented at xxx API.
-- [x] The top x users by total transaction amount of masks within a date range.
-  - Implemented at xxx API.
-- [x] The total number of masks and dollar value of transactions within a date range.
-  - Implemented at xxx API.
-- [x] Search for pharmacies or masks by name, ranked by relevance to the search term.
-  - Implemented at xxx API.
-- [x] Process a user purchases a mask from a pharmacy, and handle all relevant data changes in an atomic transaction.
-  - Implemented at xxx API.
-### A.2. API Document
-> Please describe how to use the API in the API documentation. You can edit by any format (e.g., Markdown or OpenAPI) or free tools (e.g., [hackMD](https://hackmd.io/), [postman](https://www.postman.com/), [google docs](https://docs.google.com/document/u/0/), or  [swagger](https://swagger.io/specification/)).
+# Phantom Mask 專案回應文件
 
-Import [this](#api-document) json file to Postman.
+## A. 專案概述與完成度
 
-### A.3. Import Data Commands
-Please run these two script commands to migrate the data into the database.
+### A.1. 需求完成情況
+- [x] 列出特定時間和星期幾營業的藥局
+  - 實現於 `GET /api/pharmacies/open` API
+  - 支援時間格式：HH:mm
+  - 支援星期：1-7（週一至週日）
+- [x] 列出指定藥局的口罩商品（可依名稱或價格排序）
+  - 實現於 `GET /api/pharmacies/{id}/masks` API
+  - 支援 sortBy: name/price
+  - 支援 order: asc/desc
+- [x] 列出特定價格範圍內且商品數量符合條件的藥局
+  - 實現於 `GET /api/pharmacies/filter` API
+  - 支援最小/最大價格範圍
+  - 支援商品數量的大於/小於比較
+- [x] 列出指定日期範圍內消費金額最高的用戶
+  - 實現於 `GET /api/transactions/top-users` API
+  - 支援按購買數量或金額排序
+- [x] 統計指定日期範圍內的口罩銷售總量與金額
+  - 實現於 `GET /api/transactions/statistics` API
+- [x] 依相關度搜尋藥局或口罩
+  - 實現於 `GET /api/search/v1`（MySQL 全文檢索版本）
+  - 實現於 `GET /api/search/v2`（LIKE 模式匹配版本）
+- [x] 處理用戶購買口罩的交易流程
+  - 實現於 `POST /api/transactions/purchase` API
+  - 包含原子性交易處理
+  - 自動處理庫存、用戶餘額、藥局餘額更新
 
-```bash
-$ rake import_data:pharmacies[PATH_TO_FILE]
-$ rake import_data:users[PATH_TO_FILE]
-```
-## B. Bonus Information
+### A.2. API 文件
+- 本地開發環境：http://localhost:3000/api-docs
+- 線上部署環境：https://phantom-mask-hw2y.onrender.com/api-docs
 
->  If you completed the bonus requirements, please fill in your task below.
-### B.1. Test Coverage Report
+## B. 技術實現
 
-I wrote down the 20 unit tests for the APIs I built. Please check the test coverage report at [here](#test-coverage-report).
+### B.1. 主要技術棧
+- 後端框架：Express.js
+- 資料庫：MySQL (本地開發) / PostgreSQL (線上部署)
+- ORM：Sequelize
+- API 文件：Swagger/OpenAPI 3.1.0
+- 容器化：Docker & Docker Compose
+- 部署平台：Render.com
 
-You can run the test script by using the command below:
+### B.2. 資料庫設計
+主要資料表：
+- Pharmacies：藥局基本資料
+- PharmacyHours：藥局營業時間
+- Masks：口罩基本資料
+- PharmacyInventory：藥局口罩庫存
+- Users：用戶資料
+- PurchaseRecords：交易紀錄
 
-```bash
-bundle exec rspec spec
-```
+特色：
+- 使用 FULLTEXT INDEX 優化搜尋效能
+- 完整的外鍵關聯確保資料完整性
+- 針對常用查詢建立適當索引
 
-### B.2. Dockerized
-Please check my Dockerfile / docker-compose.yml at [here](#dockerized).
+### B.3. ETL 實現
+專案包含完整的 ETL（Extract, Transform, Load）流程，用於處理原始資料並載入資料庫：
 
-On the local machine, please follow the commands below to build it.
+#### B.3.1. ETL 架構
+- 模組化設計：每個資料表都有獨立的轉換器
+  - `PharmaciesTrans.js`：藥局基本資料轉換
+  - `MasksTrans.js`：口罩資料轉換
+  - `PharmacyHoursTrans.js`：營業時間轉換
+  - `PharmacyInventoryTrans.js`：庫存資料轉換
+  - `UsersTrans.js`：用戶資料轉換
+  - `PurchaseRecordsTrans.js`：交易記錄轉換
 
-```bash
-$ docker build --build-arg ENV=development -p 80:3000 -t my-project:1.0.0 .  
-$ docker-compose up -d
+#### B.3.2. ETL 流程
+1. 第一階段：基礎資料轉換
+   - 處理藥局基本資料
+   - 處理口罩基本資料
 
-# go inside the container, run the migrate data command.
-$ docker exec -it my-project bash
-$ rake import_data:pharmacies[PATH_TO_FILE] 
-$ rake import_data:user[PATH_TO_FILE]
-```
+2. 第二階段：關聯資料轉換
+   - 處理藥局營業時間（解析不同格式的時間字串）
+   - 處理藥局庫存資料
 
-### B.3. Demo Site Url
+3. 第三階段：使用者相關資料
+   - 處理使用者資料
+   - 處理歷史交易記錄
 
-The demo site is ready on [my AWS demo site](#demo-site-url); you can try any APIs on this demo site.
+#### B.3.3. 執行方式
+1. 透過啟動腳本自動執行：
+   ```bash
+   ./start.sh
+   ```
 
-## C. Other Information
+2. 單獨執行 ETL：
+   ```bash
+   npm run etl
+   ```
 
-### C.1. ERD
+特色：
+- 支援資料去重和更新機制
+- 完整的錯誤處理和日誌記錄
+- 模組化設計，易於維護和擴展
 
-My ERD [erd-link](#erd-link).
+## C. 本地開發指南
 
-### C.2. Technical Document
+### C.1. 環境準備
+1. 確保已安裝：
+   - Node.js
+   - Docker & Docker Compose
+   - Git
 
-For frontend programmer reading, please check this [technical document](technical-document) to know how to operate those APIs.
+2. 克隆專案：
+   ```bash
+   git clone [專案地址]
+   cd phantom-mask
+   ```
 
-- --
+3. 環境設定：
+   ```bash
+   cp .env.example .env
+   # 編輯 .env 檔案設定必要參數
+   ```
+
+### C.2. 啟動專案
+1. 執行初始化腳本：
+   ```bash
+   chmod +x start.sh
+   ./start.sh
+   ```
+   此腳本會：
+   - 啟動 MySQL 容器
+   - 初始化資料庫結構
+   - 執行資料轉換與匯入
+
+2. 啟動應用服務：
+   ```bash
+   npm install
+   npm run start
+   ```
+
+3. 訪問 API 文件：
+   - 打開瀏覽器訪問 http://localhost:3000/api-docs
+
+## D. 線上部署
+
+### D.1. 部署資訊
+- 部署平台：Render.com
+- 資料庫：PostgreSQL
+- API 文件：https://phantom-mask-hw2y.onrender.com/api-docs
+
+### D.2. 部署分支說明
+- 主分支：使用 MySQL 的本地開發版本
+- render 分支：針對 Render.com 平台優化的 PostgreSQL 版本
+  - 修改資料庫連接配置
+  - 調整 SQL 語法（如 LIKE/ILIKE）
+  - 優化全文檢索實現
+
+## E. 待辦事項
+1. 補充單元測試與整合測試
+2. 添加更多資料驗證
