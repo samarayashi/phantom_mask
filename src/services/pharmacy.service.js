@@ -9,8 +9,8 @@ export const findOpenPharmacies = async (time, dayOfWeek) => {
     try {
         const pharmacies = await sequelize.query(
             `SELECT p.id, p.name, ph.day_of_week, ph.open_time, ph.close_time
-            FROM Pharmacies p
-            LEFT JOIN PharmacyHours ph ON p.id = ph.pharmacy_id
+            FROM pharmacies p
+            LEFT JOIN pharmacy_hours ph ON p.id = ph.pharmacy_id
             WHERE ph.day_of_week = :dayOfWeek 
                 AND ph.open_time <= :time AND ph.close_time > :time`,
             {
@@ -109,13 +109,13 @@ export const filterPharmaciesByMaskCriteria = async (minPrice, maxPrice, maskCou
                 pi_tmp.total_stock as mask_count,
                 pi_tmp.average_price
             FROM 
-                Pharmacies p
+                pharmacies p
                 LEFT JOIN (
                     SELECT 
                         pi.pharmacy_id,
                         SUM(pi.stock) as total_stock,
                         ROUND(AVG(pi.price), 2) as average_price
-                    FROM PharmacyInventory pi
+                    FROM pharmacy_inventory pi
                     WHERE pi.price BETWEEN :minPrice AND :maxPrice
                     GROUP BY pi.pharmacy_id
                 ) pi_tmp ON p.id = pi_tmp.pharmacy_id

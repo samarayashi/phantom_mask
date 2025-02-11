@@ -31,7 +31,7 @@ const defineMask = (sequelize) => {
             comment: '每包數量'
         }
     }, {
-        tableName: 'Masks',
+        tableName: 'masks',
         timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at'

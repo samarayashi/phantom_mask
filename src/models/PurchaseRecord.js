@@ -50,7 +50,7 @@ const definePurchaseRecord = (sequelize) => {
             comment: '交易狀態'
         }
     }, {
-        tableName: 'PurchaseRecords',
+        tableName: 'purchase_records',
         timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at',

@@ -33,7 +33,7 @@ const definePharmacyInventory = (sequelize) => {
             comment: '庫存數量'
         }
     }, {
-        tableName: 'PharmacyInventory',
+        tableName: 'pharmacy_inventory',
         timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at',

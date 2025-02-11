@@ -29,9 +29,9 @@ const transformPurchaseRecords = async () => {
                 pi.id,
                 p.name as pharmacy_name,
                 m.name as mask_name
-            FROM PharmacyInventory pi
-            JOIN Pharmacies p ON pi.pharmacy_id = p.id
-            JOIN Masks m ON pi.mask_id = m.id
+            FROM pharmacy_inventory pi
+            JOIN pharmacies p ON pi.pharmacy_id = p.id
+            JOIN masks m ON pi.mask_id = m.id
         `);
         
         // 建立庫存查找索引
@@ -47,21 +47,21 @@ const transformPurchaseRecords = async () => {
         for (const user of users) {
             const userId = userMap[user.name]?.id;
             if (!userId) {
-                logger.warn(`User not found: ${user.name}`);
+                logger.warn(`找不到使用者: ${user.name}`);
                 continue;
             }
             
             for (const purchase of user.purchaseHistories || []) {
                 const pharmacyId = pharmacyMap[purchase.pharmacyName]?.id;
                 if (!pharmacyId) {
-                    logger.warn(`Pharmacy not found: ${purchase.pharmacyName}`);
+                    logger.warn(`找不到藥局: ${purchase.pharmacyName}`);
                     continue;
                 }
                 
                 const inventoryKey = `${purchase.pharmacyName}:${purchase.maskName}`;
                 const inventoryId = inventoryMap.get(inventoryKey);
                 if (!inventoryId) {
-                    logger.warn(`Inventory not found: ${inventoryKey}`);
+                    logger.warn(`找不到庫存記錄: ${inventoryKey}`);
                     continue;
                 }
                 
@@ -86,7 +86,7 @@ const transformPurchaseRecords = async () => {
             });
             
             await transaction.commit();
-            logger.info('Bulk insert purchase records completed', {
+            logger.info('批次插入購買記錄完成', {
                 count: allPurchaseRecords.length
             });
             
@@ -96,7 +96,7 @@ const transformPurchaseRecords = async () => {
             throw error;
         }
     } catch (error) {
-        logger.error('Error transforming purchase records', { error: error.message });
+        logger.error('轉換購買記錄時發生錯誤', { error: error.message });
         throw error;
     }
 };

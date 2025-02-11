@@ -15,7 +15,7 @@ export const searchV1 = async (type, keyword, limit = 10, offset = 0) => {
                     name,
                     similarity(name, :keyword) as relevance
                 FROM 
-                    "Pharmacies"
+                    pharmacies
                 WHERE 
                     name % :keyword
                 ORDER BY 
@@ -34,7 +34,7 @@ export const searchV1 = async (type, keyword, limit = 10, offset = 0) => {
                         similarity(name, :keyword)
                     ) as relevance
                 FROM 
-                    "Masks"
+                    masks
                 WHERE 
                     brand % :keyword
                     OR name % :keyword
@@ -58,8 +58,8 @@ export const searchV1 = async (type, keyword, limit = 10, offset = 0) => {
 
         // 計算總數
         const countSql = type === 'pharmacy' 
-            ? `SELECT COUNT(*) as total FROM "Pharmacies" WHERE name % :keyword`
-            : `SELECT COUNT(*) as total FROM "Masks" WHERE brand % :keyword OR name % :keyword`;
+            ? `SELECT COUNT(*) as total FROM pharmacies WHERE name % :keyword`
+            : `SELECT COUNT(*) as total FROM masks WHERE brand % :keyword OR name % :keyword`;
 
         const [{ total }] = await sequelize.query(countSql, {
             replacements: { keyword: searchKeyword },
@@ -94,7 +94,7 @@ export const searchV2 = async (type, keyword, limit = 10, offset = 0) => {
                         ELSE 40  -- 其他匹配情況
                     END as relevance
                 FROM 
-                    "Pharmacies"
+                    pharmacies
                 WHERE 
                     name ILIKE :containKeyword
                 ORDER BY 
@@ -117,7 +117,7 @@ export const searchV2 = async (type, keyword, limit = 10, offset = 0) => {
                         ELSE 20  -- 其他匹配情況
                     END as relevance
                 FROM 
-                    "Masks"
+                    masks
                 WHERE 
                     brand ILIKE :containKeyword
                     OR name ILIKE :containKeyword
@@ -143,8 +143,8 @@ export const searchV2 = async (type, keyword, limit = 10, offset = 0) => {
 
         // 計算總數
         const countSql = type === 'pharmacy' 
-            ? `SELECT COUNT(*) as total FROM "Pharmacies" WHERE name ILIKE :containKeyword`
-            : `SELECT COUNT(*) as total FROM "Masks" WHERE brand ILIKE :containKeyword OR name ILIKE :containKeyword`;
+            ? `SELECT COUNT(*) as total FROM pharmacies WHERE name ILIKE :containKeyword`
+            : `SELECT COUNT(*) as total FROM masks WHERE brand ILIKE :containKeyword OR name ILIKE :containKeyword`;
 
         const [{ total }] = await sequelize.query(countSql, {
             replacements: { 

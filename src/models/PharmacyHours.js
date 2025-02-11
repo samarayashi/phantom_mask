@@ -36,7 +36,7 @@ const definePharmacyHours = (sequelize) => {
             comment: '是否營業(FALSE=休息)'
         }
     }, {
-        tableName: 'PharmacyHours',
+        tableName: 'pharmacy_hours',
         timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at'

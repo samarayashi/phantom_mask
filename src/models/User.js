@@ -22,7 +22,7 @@ const defineUser = (sequelize) => {
             comment: '現金餘額'
         }
     }, {
-        tableName: 'Users',
+        tableName: 'users',
         timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at'

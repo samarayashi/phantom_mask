@@ -19,8 +19,8 @@ export const findTopUsers = async (startDate, endDate, limit = 10, sortBy = 'qua
                 SUM(pr.quantity) as total_masks,
                 SUM(pr.transaction_amount) as total_amount
             FROM 
-                PurchaseRecords pr
-                LEFT JOIN Users u ON u.id = pr.user_id
+                purchase_records pr
+                LEFT JOIN users u ON u.id = pr.user_id
             WHERE 
                 DATE(pr.transaction_date) BETWEEN :startDate AND :endDate
             GROUP BY 
@@ -59,7 +59,7 @@ export const getTransactionStatistics = async (startDate, endDate) => {
                 -- 計算總交易金額
                 SUM(pr.transaction_amount) as total_amount
             FROM 
-                PurchaseRecords pr
+                purchase_records pr
             WHERE 
                 DATE(pr.transaction_date) BETWEEN :startDate AND :endDate;
         `;
@@ -106,8 +106,8 @@ export const processPurchase = async (userId, pharmacyInventoryId, quantity) => 
                 p.id as pharmacy_id,
                 p.cash_balance as pharmacy_balance
             FROM 
-                PharmacyInventory pi
-                left JOIN Pharmacies p ON pi.pharmacy_id = p.id
+                pharmacy_inventory pi
+                left JOIN pharmacies p ON pi.pharmacy_id = p.id
             WHERE 
                 pi.id = :pharmacyInventoryId
             FOR UPDATE
@@ -143,7 +143,7 @@ export const processPurchase = async (userId, pharmacyInventoryId, quantity) => 
 
         // 4.2 更新藥局餘額
         await sequelize.query(`
-            UPDATE Pharmacies 
+            UPDATE pharmacies 
             SET cash_balance = cash_balance + :totalAmount 
             WHERE id = :pharmacyId;
         `, {
@@ -156,7 +156,7 @@ export const processPurchase = async (userId, pharmacyInventoryId, quantity) => 
 
         // 4.2 更新用戶餘額
         await sequelize.query(`
-            UPDATE Users 
+            UPDATE users 
             SET cash_balance = cash_balance - :totalAmount 
             WHERE id = :userId;
         `, {
@@ -169,7 +169,7 @@ export const processPurchase = async (userId, pharmacyInventoryId, quantity) => 
 
         // 4.3 創建交易記錄
         await sequelize.query(`
-            INSERT INTO PurchaseRecords (
+            INSERT INTO purchase_records (
                 user_id,
                 pharmacy_id,
                 pharmacy_inventory_id,

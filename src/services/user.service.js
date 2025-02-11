@@ -59,7 +59,7 @@ export const searchUsers = async (keyword, limit = 10, offset = 0) => {
                 cash_balance,
                 created_at
             FROM 
-                Users
+                users
             WHERE 
                 name LIKE :keyword
             ORDER BY 
@@ -78,7 +78,7 @@ export const searchUsers = async (keyword, limit = 10, offset = 0) => {
 
         // 計算總數
         const [{ total }] = await sequelize.query(
-            'SELECT COUNT(*) as total FROM Users WHERE name LIKE :keyword',
+            'SELECT COUNT(*) as total FROM users WHERE name LIKE :keyword',
             {
                 replacements: { keyword: `%${keyword}%` },
                 type: sequelize.QueryTypes.SELECT

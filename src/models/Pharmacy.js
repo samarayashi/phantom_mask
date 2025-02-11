@@ -22,7 +22,7 @@ const definePharmacy = (sequelize) => {
             comment: '現金餘額'
         }
     }, {
-        tableName: 'Pharmacies',
+        tableName: 'pharmacies',
         timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at'
