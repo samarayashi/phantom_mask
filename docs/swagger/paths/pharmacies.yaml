@@ -142,6 +142,7 @@
     tags:
       - Pharmacies
     summary: Get masks sold by a pharmacy
+    escription: 根據藥局ID獲取該藥局的口罩庫存信息
     parameters:
       - name: id
         in: path
@@ -171,35 +172,54 @@
         content:
           application/json:
             schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  mask_id:
+                    type: integer
+                    description: 口罩ID
+                  mask_name:
+                    type: string
+                    description: 口罩名稱
+                  mask_brand:
+                    type: string
+                    description: 口罩品牌
+                  mask_color:
+                    type: string
+                    description: 口罩顏色
+                  mask_price:
+                    type: number
+                    format: float
+                    description: 口罩價格
+                  mask_stock:
+                    type: integer
+                    description: 庫存數量
+      '404':
+        description: 找不到指定藥局
+        content:
+          application/json:
+            schema:
               type: object
               properties:
                 status:
                   type: string
-                  enum: [success]
-                data:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                      name:
-                        type: string
-                      brand:
-                        type: string
-                      color:
-                        type: string
-                      price:
-                        type: number
-                      stock:
-                        type: integer
-                meta:
-                  type: object
-                  properties:
-                    total:
-                      type: integer
-      '404':
-        description: Pharmacy not found
+                  enum: [error]
+                message:
+                  type: string
+                  example: "Pharmacy not found"
+      '500':
+        description: 服務器內部錯誤
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [error]
+                message:
+                  type: string
 
 /pharmacies/filter:
   get:

@@ -69,8 +69,7 @@ export const findPharmacyMasks = async (pharmacyId, sortBy = 'name', order = 'as
                 pharmacy_id: pharmacyId
             },
             include: [{
-                model: Mask,
-                required: true
+                model: Mask
             }],
             order: [
                 // 動態排序
@@ -81,12 +80,12 @@ export const findPharmacyMasks = async (pharmacyId, sortBy = 'name', order = 'as
         });
 
         return masks.map(inventory => ({
-            id: inventory.Mask.id,
-            name: inventory.Mask.name,
-            brand: inventory.Mask.brand,
-            color: inventory.Mask.color,
-            price: inventory.price,
-            stock: inventory.stock
+            mask_id: inventory.Mask.id,
+            mask_name: inventory.Mask.name,
+            mask_brand: inventory.Mask.brand,
+            mask_color: inventory.Mask.color,
+            mask_price: inventory.price,
+            mask_stock: inventory.stock
         }));
     } catch (error) {
         logger.error('Error in findPharmacyMasks service:', error);
