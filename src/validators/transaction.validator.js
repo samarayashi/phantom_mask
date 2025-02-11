@@ -19,7 +19,11 @@ export const validateDateRange = [
     query('limit')
         .optional()
         .isInt({ min: 1, max: 100 })
-        .withMessage('Limit must be between 1 and 100')
+        .withMessage('Limit must be between 1 and 100'),
+    query('sortBy')
+        .optional()
+        .isIn(['quantity', 'amount'])
+        .withMessage('Sort by must be either quantity or amount')
 ];
 
 export const validatePurchase = [

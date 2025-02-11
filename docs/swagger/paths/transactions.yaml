@@ -2,8 +2,8 @@
   get:
     tags:
       - Transactions
-    summary: Get top users by mask purchase quantity
-    description: List users who purchased the most masks within a date range
+    summary: Get top users by mask purchase quantity or amount
+    description: List users who purchased the most masks or spent the most money within a date range
     parameters:
       - name: startDate
         in: query
@@ -26,6 +26,14 @@
           type: integer
           default: 10
         description: Number of top users to return
+      - name: sortBy
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [quantity, amount]
+          default: quantity
+        description: Sort by mask quantity or total amount
     responses:
       '200':
         description: Success
@@ -51,6 +59,10 @@
                       totalMasks:
                         type: integer
                         description: Total number of masks purchased
+                      totalAmount:
+                        type: number
+                        format: float
+                        description: Total amount spent
                 meta:
                   type: object
                   properties:
@@ -60,8 +72,9 @@
                     endDate:
                       type: string
                       format: date
-                    total:
-                      type: integer
+                    sortBy:
+                      type: string
+                      enum: [quantity, amount]
 
 /transactions/statistics:
   get:

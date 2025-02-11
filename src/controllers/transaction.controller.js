@@ -4,12 +4,13 @@ import * as transactionService from '../services/transaction.service.js';
 
 export const getTopUsers = async (req, res, next) => {
     try {
-        const { startDate, endDate, limit = 10 } = req.query;
+        const { startDate, endDate, limit = 10, sortBy = 'quantity' } = req.query;
         
         const users = await transactionService.findTopUsers(
             startDate,
             endDate,
-            parseInt(limit)
+            parseInt(limit),
+            sortBy
         );
         
         res.json({
@@ -17,7 +18,8 @@ export const getTopUsers = async (req, res, next) => {
             data: users,
             meta: {
                 startDate,
-                endDate
+                endDate,
+                sortBy
             }
         });
     } catch (error) {

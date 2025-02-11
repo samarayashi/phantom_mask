@@ -6,7 +6,7 @@ import {
     InsufficientStockError 
 } from '../middlewares/errorHandler.js';
 
-export const findTopUsers = async (startDate, endDate, limit = 10) => {
+export const findTopUsers = async (startDate, endDate, limit = 10, sortBy = 'quantity') => {
     const sequelize = getDB();
     
     try {
@@ -15,8 +15,9 @@ export const findTopUsers = async (startDate, endDate, limit = 10) => {
             SELECT 
                 u.id as user_id,
                 u.name,
-                -- 計算購買口罩總數（主要排序依據）
-                SUM(pr.quantity) as total_masks
+                -- 計算購買口罩總數和總金額
+                SUM(pr.quantity) as total_masks,
+                SUM(pr.transaction_amount) as total_amount
             FROM 
                 PurchaseRecords pr
                 LEFT JOIN Users u ON u.id = pr.user_id
@@ -25,7 +26,7 @@ export const findTopUsers = async (startDate, endDate, limit = 10) => {
             GROUP BY 
                 u.id, u.name
             ORDER BY 
-                total_masks DESC
+                ${sortBy === 'amount' ? 'total_amount' : 'total_masks'} DESC
             LIMIT :limit;
         `;
 
@@ -34,11 +35,11 @@ export const findTopUsers = async (startDate, endDate, limit = 10) => {
             type: sequelize.QueryTypes.SELECT
         });
 
-        
         return results.map(row => ({
             userId: row.user_id,
             name: row.name,
-            totalMasks: parseInt(row.total_masks)
+            totalMasks: parseInt(row.total_masks),
+            totalAmount: parseFloat(row.total_amount)
         }));
     } catch (error) {
         logger.error('Error in findTopUsers service:', error);
