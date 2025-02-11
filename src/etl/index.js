@@ -1,27 +1,17 @@
 import _ from 'lodash';
-import { logger } from './logger.js';
+import { logger } from '../utils/logger.js';
 import { transformPharmacies } from './PharmaciesTrans.js';
 import { transformMasks } from './MasksTrans.js';
 import { transformPharmacyHours } from './PharmacyHoursTrans.js';
 import { transformPharmacyInventory } from './PharmacyInventoryTrans.js';
 import { transformUsers } from './UsersTrans.js';
 import { transformPurchaseRecords } from './PurchaseRecordsTrans.js';
-import { initializeModels, getModels } from '../lib/db.js';
+import { initializeModels } from '../utils/db.js';
 
 const runETL = async () => {
     try {
         // 初始化所有模型
         await initializeModels();
-        
-        // 獲取所有模型
-        const { 
-            Mask, 
-            Pharmacy, 
-            PharmacyHours, 
-            PharmacyInventory, 
-            PurchaseRecord, 
-            User 
-        } = getModels();
         
         logger.info('Starting ETL process...');
         
@@ -68,4 +58,10 @@ const runETL = async () => {
 
 export { runETL };
 
-runETL();
+// 只在直接執行時運行 ETL
+if (process.argv[1] === new URL(import.meta.url).pathname) {
+    runETL().catch(error => {
+        console.error('ETL process failed:', error);
+        process.exit(1);
+    });
+}
