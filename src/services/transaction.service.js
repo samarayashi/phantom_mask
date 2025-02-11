@@ -107,7 +107,7 @@ export const processPurchase = async (userId, pharmacyInventoryId, quantity) => 
                 p.cash_balance as pharmacy_balance
             FROM 
                 pharmacy_inventory pi
-                left JOIN pharmacies p ON pi.pharmacy_id = p.id
+                INNER JOIN pharmacies p ON pi.pharmacy_id = p.id
             WHERE 
                 pi.id = :pharmacyInventoryId
             FOR UPDATE
