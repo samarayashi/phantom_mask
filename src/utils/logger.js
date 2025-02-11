@@ -1,14 +1,40 @@
 import winston from 'winston';
 import 'winston-daily-rotate-file';
 
-const { combine, timestamp, printf, colorize, align } = winston.format;
+const { combine, timestamp, printf, colorize, align, errors } = winston.format;
 
 // 自定義日誌格式
-const logFormat = printf(({ level, message, timestamp, ...metadata }) => {
+const logFormat = printf(({ level, message, timestamp, stack, ...metadata }) => {
     let msg = `${timestamp} [${level}] : ${message}`;
-    if (Object.keys(metadata).length > 0) {
-        msg += ` ${JSON.stringify(metadata)}`;
+    
+    // 添加錯誤堆棧（如果存在）
+    if (stack) {
+        msg += `\nStack Trace: ${stack}`;
     }
+    
+    // 添加請求信息（如果存在）
+    if (metadata.req) {
+        const { method, url, body, query, params } = metadata.req;
+        msg += `\nRequest: ${method} ${url}`;
+        if (Object.keys(body || {}).length > 0) msg += `\nBody: ${JSON.stringify(body)}`;
+        if (Object.keys(query || {}).length > 0) msg += `\nQuery: ${JSON.stringify(query)}`;
+        if (Object.keys(params || {}).length > 0) msg += `\nParams: ${JSON.stringify(params)}`;
+    }
+    
+    // 添加響應信息（如果存在）
+    if (metadata.res) {
+        const { statusCode } = metadata.res;
+        msg += `\nResponse: ${statusCode}`;
+    }
+    
+    // 添加其他元數據
+    const otherMetadata = { ...metadata };
+    delete otherMetadata.req;
+    delete otherMetadata.res;
+    if (Object.keys(otherMetadata).length > 0) {
+        msg += `\nMetadata: ${JSON.stringify(otherMetadata, null, 2)}`;
+    }
+    
     return msg;
 });
 
@@ -16,6 +42,7 @@ const logFormat = printf(({ level, message, timestamp, ...metadata }) => {
 const logger = winston.createLogger({
     level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
     format: combine(
+        errors({ stack: true }),
         timestamp({
             format: 'YYYY-MM-DD HH:mm:ss'
         }),
@@ -57,4 +84,33 @@ if (process.env.NODE_ENV !== 'production') {
     }));
 }
 
-export { logger };
+// 添加請求日誌中間件
+const requestLogger = (req, res, next) => {
+    // 記錄請求開始
+    const startTime = Date.now();
+    
+    // 在響應結束時記錄完整信息
+    res.on('finish', () => {
+        const duration = Date.now() - startTime;
+        const logLevel = res.statusCode >= 400 ? 'error' : 'info';
+        
+        logger[logLevel](`${req.method} ${req.url} ${res.statusCode} ${duration}ms`, {
+            req: {
+                method: req.method,
+                url: req.url,
+                body: req.body,
+                query: req.query,
+                params: req.params,
+                headers: req.headers
+            },
+            res: {
+                statusCode: res.statusCode,
+                duration
+            }
+        });
+    });
+    
+    next();
+};
+
+export { logger, requestLogger };

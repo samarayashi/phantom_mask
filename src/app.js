@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { logger } from './utils/logger.js';
+import { logger, requestLogger } from './utils/logger.js';
 import { initializeModels } from './utils/db.js';
 import { setupSwagger } from './config/swagger.js';
 
@@ -21,13 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 請求日誌中間件
-app.use((req, res, next) => {
-    logger.info(`${req.method} ${req.url}`, {
-        ip: req.ip,
-        userAgent: req.get('user-agent')
-    });
-    next();
-});
+app.use(requestLogger);
 
 // 設置 Swagger 文檔
 setupSwagger(app);
@@ -43,10 +37,27 @@ app.use('/api/users', (await import('./routes/user.routes.js')).default);
 
 // 錯誤處理中間件
 app.use((err, req, res, next) => {
-    logger.error('Unhandled error:', err);
+    // 增強錯誤日誌
+    logger.error('Unhandled error:', {
+        error: {
+            message: err.message,
+            stack: err.stack,
+            name: err.name,
+            code: err.code
+        },
+        req: {
+            method: req.method,
+            url: req.url,
+            body: req.body,
+            query: req.query,
+            params: req.params
+        }
+    });
+
     res.status(500).json({
         status: 'error',
-        message: 'Internal server error'
+        message: 'Internal server error',
+        ...(process.env.NODE_ENV !== 'production' && { error: err.message })
     });
 });
 
@@ -63,7 +74,12 @@ async function startServer() {
             logger.info(`服務器已啟動，監聽端口 ${PORT}`);
         });
     } catch (error) {
-        logger.error('服務器啟動失敗:', error);
+        logger.error('服務器啟動失敗:', {
+            error: {
+                message: error.message,
+                stack: error.stack
+            }
+        });
         process.exit(1);
     }
 }
