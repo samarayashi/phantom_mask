@@ -18,7 +18,7 @@ const config = {
         }
     },
     production: {
-        url: process.env.DATABASE_URL || 'postgresql://alfred:UYu8FFurulSg1VGcQ1lUjtmn0EpjeqY9@dpg-culk6ld6l47c73dq4do0-a.oregon-postgres.render.com/mask_5ijv',
+        url: process.env.DATABASE_URL,
         dialect: 'postgres',
         dialectOptions: {
             ssl: {
