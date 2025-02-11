@@ -4,6 +4,8 @@ info:
   description: API documentation for the Mask System
   version: 1.0.0
 servers:
+  - url: https://phantom-mask-hw2y.onrender.com/api
+    description: Production server
   - url: http://localhost:3000/api
     description: Local development server
 
