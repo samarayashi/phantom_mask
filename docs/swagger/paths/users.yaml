@@ -1,0 +1,149 @@
+/users/search:
+  get:
+    tags:
+      - Users
+    summary: 搜尋用戶
+    description: 根據關鍵字搜尋用戶名稱
+    parameters:
+      - name: keyword
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 2
+        description: 搜尋關鍵字
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+        description: 每頁數量
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: 跳過的數量
+    responses:
+      '200':
+        description: 成功
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [success]
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/User'
+                meta:
+                  type: object
+                  properties:
+                    total:
+                      type: integer
+                    limit:
+                      type: integer
+                    offset:
+                      type: integer
+
+/users/id/{id}:
+  get:
+    tags:
+      - Users
+    summary: 根據ID獲取用戶
+    description: 使用用戶ID查詢用戶信息
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: 用戶ID
+    responses:
+      '200':
+        description: 成功
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [success]
+                data:
+                  $ref: '#/components/schemas/User'
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/users/name/{name}:
+  get:
+    tags:
+      - Users
+    summary: 根據名稱獲取用戶
+    description: 使用用戶名稱查詢用戶信息
+    parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 2
+          maxLength: 255
+        description: 用戶名稱
+    responses:
+      '200':
+        description: 成功
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [success]
+                data:
+                  $ref: '#/components/schemas/User'
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: 用戶ID
+        name:
+          type: string
+          description: 用戶名稱
+        cash_balance:
+          type: number
+          format: float
+          description: 現金餘額
+        created_at:
+          type: string
+          format: date-time
+          description: 創建時間
+  responses:
+    NotFound:
+      description: 資源不存在
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                enum: [error]
+              message:
+                type: string 
