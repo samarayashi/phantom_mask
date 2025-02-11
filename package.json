@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "migrate_db": "node src/migrations/index.js",
     "test_etl": "node test/testETL.js"
   },
   "dependencies": {
@@ -17,6 +18,8 @@
     "helmet": "^7.1.0",
     "js-yaml": "^4.1.0",
     "mysql2": "^3.9.1",
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.1",
     "swagger-ui-express": "^5.0.0",
     "winston": "^3.11.0",
@@ -25,5 +28,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

@@ -18,18 +18,24 @@ const config = {
         }
     },
     production: {
-        url: process.env.DATABASE_URL,
-        dialect: 'mysql',
+        url: process.env.DATABASE_URL || 'postgresql://alfred:UYu8FFurulSg1VGcQ1lUjtmn0EpjeqY9@dpg-culk6ld6l47c73dq4do0-a.oregon-postgres.render.com/mask_5ijv',
+        dialect: 'postgres',
         dialectOptions: {
             ssl: {
-                rejectUnauthorized: true,
-            }
+                require: true,
+                rejectUnauthorized: false
+            },
+            keepAlive: true
         },
         pool: {
-            max: 5,
+            max: 3,
             min: 0,
             acquire: 30000,
             idle: 10000
+        },
+        logging: console.log,
+        retry: {
+            max: 3
         }
     }
 };

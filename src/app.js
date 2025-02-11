@@ -32,6 +32,9 @@ app.use((req, res, next) => {
 // 設置 Swagger 文檔
 setupSwagger(app);
 
+// 健康檢查路由
+app.use('/api/health', (await import('./routes/health.routes.js')).default);
+
 // API 路由
 app.use('/api/pharmacies', (await import('./routes/pharmacy.routes.js')).default);
 app.use('/api/transactions', (await import('./routes/transaction.routes.js')).default);
@@ -46,5 +49,28 @@ app.use((err, req, res, next) => {
         message: 'Internal server error'
     });
 });
+
+// 初始化數據庫和啟動服務器
+const PORT = process.env.PORT || 3000;
+
+async function startServer() {
+    try {
+        // 初始化數據庫模型
+        await initializeModels();
+        
+        // 啟動服務器
+        app.listen(PORT, () => {
+            logger.info(`服務器已啟動，監聽端口 ${PORT}`);
+        });
+    } catch (error) {
+        logger.error('服務器啟動失敗:', error);
+        process.exit(1);
+    }
+}
+
+// 如果直接運行此文件則啟動服務器
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+    startServer();
+}
 
 export default app; 
