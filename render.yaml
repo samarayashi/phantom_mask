@@ -3,7 +3,7 @@ services:
     name: phantom-mask-api
     runtime: node
     buildCommand: npm install
-    startCommand: node src/app.js
+    startCommand: node src/server.js
     envVars:
       - key: NODE_ENV
         value: production
