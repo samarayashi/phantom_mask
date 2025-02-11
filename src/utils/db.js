@@ -1,5 +1,6 @@
 import { Sequelize } from 'sequelize';
 import { logger } from './logger.js';
+import dbConfig from '../config/database.js';
 
 let sequelize = null;
 let models = {};
@@ -36,21 +37,20 @@ const executeRawQuery = async (sql, options = {}) => {
 const initDB = async () => {
     try {
         if (!sequelize) {
-            sequelize = new Sequelize({
-                host: process.env.DB_HOST || 'localhost',
-                port: process.env.MYSQL_PORT || 3306,
-                database: process.env.MYSQL_DATABASE || 'mask_system',
-                username: process.env.MYSQL_USER || 'mask_user',
-                password: process.env.MYSQL_PASSWORD || 'your_user_password',
-                dialect: 'mysql',
-                logging: configureSequelizeLogging(),
-                pool: {
-                    max: 10,
-                    min: 0,
-                    acquire: 30000,
-                    idle: 10000
-                }
-            });
+            // 使用統一的配置
+            if (process.env.NODE_ENV === 'production' && dbConfig.url) {
+                sequelize = new Sequelize(dbConfig.url, {
+                    dialect: dbConfig.dialect,
+                    dialectOptions: dbConfig.dialectOptions,
+                    logging: configureSequelizeLogging(),
+                    pool: dbConfig.pool
+                });
+            } else {
+                sequelize = new Sequelize({
+                    ...dbConfig,
+                    logging: configureSequelizeLogging()
+                });
+            }
 
             await sequelize.authenticate();
             logger.info('Database connected successfully');
