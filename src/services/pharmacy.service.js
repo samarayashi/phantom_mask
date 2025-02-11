@@ -33,7 +33,7 @@ export const searchPharmacies = async (keyword, limit = 10, offset = 0) => {
         const result = await Pharmacy.findAndCountAll({
             where: {
                 name: {
-                    [Op.like]: `%${keyword}%`
+                    [Op.iLike]: `%${keyword}%`
                 }
             },
             limit,
