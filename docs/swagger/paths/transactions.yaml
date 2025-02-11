@@ -128,4 +128,112 @@
                       type: string
                       format: date
 
+/transactions/purchase:
+  post:
+    tags:
+      - Transactions
+    summary: 購買口罩
+    description: 執行口罩購買交易，包含庫存檢查、餘額檢查和交易記錄
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - userId
+              - pharmacyInventoryId
+              - quantity
+            properties:
+              userId:
+                type: integer
+                description: 購買者ID
+                example: 1
+              pharmacyInventoryId:
+                type: integer
+                description: 藥局庫存ID
+                example: 1
+              quantity:
+                type: integer
+                minimum: 1
+                description: 購買數量
+                example: 1
+    responses:
+      '200':
+        description: 交易成功
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [success]
+                data:
+                  type: object
+                  properties:
+                    totalAmount:
+                      type: number
+                      format: float
+                      description: 交易總金額
+                    quantity:
+                      type: integer
+                      description: 購買數量
+                    status:
+                      type: string
+                      enum: [success]
+                      description: 交易狀態
+      '400':
+        description: 請求錯誤
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [error]
+                message:
+                  type: string
+                  example: "Insufficient funds"
+              examples:
+                insufficientFunds:
+                  value:
+                    status: error
+                    message: "Insufficient funds"
+                insufficientStock:
+                  value:
+                    status: error
+                    message: "Insufficient stock"
+                invalidInput:
+                  value:
+                    status: error
+                    message: "Invalid input parameters"
+      '404':
+        description: 資源不存在
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [error]
+                message:
+                  type: string
+                  example: "User or pharmacy inventory not found"
+      '500':
+        description: 服務器錯誤
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [error]
+                message:
+                  type: string
+                  example: "Failed to process purchase"
+
 # ... 其他交易相關 API 
