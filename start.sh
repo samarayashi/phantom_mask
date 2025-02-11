@@ -1,10 +1,18 @@
 #!/bin/bash
 set -e  # 添加錯誤檢查
+set -o pipefail  # 確保管道命令中的錯誤能被捕獲
 
 # 檢查 Docker 守護進程是否運行
 if ! docker info > /dev/null 2>&1; then
     echo "錯誤：Docker 守護進程未運行"
     echo "請先啟動 Docker Desktop 或 Docker 服務"
+    exit 1
+fi
+
+# 檢查 Node.js 是否安裝
+if ! command -v node > /dev/null 2>&1; then
+    echo "錯誤：未找到 Node.js"
+    echo "請安裝 Node.js 後再試"
     exit 1
 fi
 
@@ -22,9 +30,11 @@ source .env
 docker-compose down
 
 # 檢查是否需要重新初始化
+NEED_ETL=false
 if [ "$1" = "--reinit" ]; then
     echo "重新初始化數據庫..."
     docker-compose down -v  # 刪除數據卷
+    NEED_ETL=true
 fi
 
 # 啟動容器
@@ -49,6 +59,7 @@ if [ "$TABLES_COUNT" -eq 0 ]; then
     echo "正在嘗試手動修復..."
     if docker-compose exec -T mysql mysql -h"localhost" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" "${MYSQL_DATABASE}" < mysql/init/01-schema.sql; then
         echo "手動初始化成功完成"
+        NEED_ETL=true
     else
         echo "錯誤：手動初始化失敗"
         echo "請檢查數據庫連接設置和初始化腳本"
@@ -65,4 +76,41 @@ echo "用戶名：${MYSQL_USER}"
 
 # 顯示表格信息
 echo -e "\n當前數據庫表格："
-docker-compose exec -T mysql mysql -h"localhost" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" "${MYSQL_DATABASE}" -e "SHOW TABLES;" 
+docker-compose exec -T mysql mysql -h"localhost" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" "${MYSQL_DATABASE}" -e "SHOW TABLES;"
+
+# 執行 ETL 流程（如果需要）
+if [ "$NEED_ETL" = true ]; then
+    echo "開始執行 ETL 流程..."
+    
+    # 先安裝 Node.js 依賴
+    echo "安裝 Node.js 依賴..."
+    if ! npm install; then
+        echo "錯誤：安裝 Node.js 依賴失敗"
+        exit 1
+    fi
+
+    # 創建日誌目錄
+    mkdir -p logs/etl
+
+    # 生成帶時間戳的日誌檔案名稱
+    LOG_FILE="logs/etl/etl_$(date +%Y%m%d_%H%M%S).log"
+    
+    # 執行 ETL 並捕捉退出碼（使用 PIPESTATUS 取得 node 指令的退出碼）
+    node src/etl/index.js 2>&1 | tee "$LOG_FILE" || true
+    ETL_EXIT_CODE=${PIPESTATUS[0]}
+    echo "ETL 退出碼: $ETL_EXIT_CODE"
+
+    # 根據退出碼給出後續提示
+    if [ "$ETL_EXIT_CODE" -eq 0 ]; then
+        echo "ETL 流程執行成功！"
+        echo "詳細日誌已保存到：$LOG_FILE"
+    else
+        echo "錯誤：ETL 流程執行失敗（退出碼：$ETL_EXIT_CODE）"
+        echo "錯誤詳情："
+        tail -n 10 "$LOG_FILE"
+        echo "完整日誌請查看：$LOG_FILE"
+        exit 1
+    fi
+fi
+
+echo "系統初始化完成！" 
