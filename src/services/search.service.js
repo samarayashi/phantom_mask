@@ -30,14 +30,12 @@ export const searchV1 = async (type, keyword, limit = 10, offset = 0) => {
                     brand,
                     color,
                     greatest(
-                        similarity(brand, :keyword),
-                        similarity(name, :keyword)
+                        similarity(brand, :keyword)
                     ) as relevance
                 FROM 
                     masks
                 WHERE 
                     brand % :keyword
-                    OR name % :keyword
                 ORDER BY 
                     relevance DESC
                 LIMIT :limit OFFSET :offset;
@@ -59,7 +57,7 @@ export const searchV1 = async (type, keyword, limit = 10, offset = 0) => {
         // 計算總數
         const countSql = type === 'pharmacy' 
             ? `SELECT COUNT(*) as total FROM pharmacies WHERE name % :keyword`
-            : `SELECT COUNT(*) as total FROM masks WHERE brand % :keyword OR name % :keyword`;
+            : `SELECT COUNT(*) as total FROM masks WHERE brand % :keyword`;
 
         const [{ total }] = await sequelize.query(countSql, {
             replacements: { keyword: searchKeyword },
@@ -113,14 +111,12 @@ export const searchV2 = async (type, keyword, limit = 10, offset = 0) => {
                         WHEN brand ILIKE :exactKeyword THEN 100  -- 完全匹配
                         WHEN brand ILIKE :startWithKeyword THEN 80  -- 開頭匹配
                         WHEN brand ILIKE :containKeyword THEN 60  -- 包含匹配
-                        WHEN name ILIKE :containKeyword THEN 40  -- 名稱包含匹配
                         ELSE 20  -- 其他匹配情況
                     END as relevance
                 FROM 
                     masks
                 WHERE 
                     brand ILIKE :containKeyword
-                    OR name ILIKE :containKeyword
                 ORDER BY 
                     relevance DESC,
                     brand ASC
