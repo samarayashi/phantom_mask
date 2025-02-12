@@ -57,47 +57,6 @@
 - 完整的外鍵關聯確保資料完整性
 - 針對常用查詢建立適當索引
 
-### B.3. ETL 實現
-專案包含完整的 ETL（Extract, Transform, Load）流程，用於處理原始資料並載入資料庫：
-
-#### B.3.1. ETL 架構
-- 模組化設計：每個資料表都有獨立的轉換器
-  - `PharmaciesTrans.js`：藥局基本資料轉換
-  - `MasksTrans.js`：口罩資料轉換
-  - `PharmacyHoursTrans.js`：營業時間轉換
-  - `PharmacyInventoryTrans.js`：庫存資料轉換
-  - `UsersTrans.js`：用戶資料轉換
-  - `PurchaseRecordsTrans.js`：交易記錄轉換
-
-#### B.3.2. ETL 流程
-1. 第一階段：基礎資料轉換
-   - 處理藥局基本資料
-   - 處理口罩基本資料
-
-2. 第二階段：關聯資料轉換
-   - 處理藥局營業時間（解析不同格式的時間字串）
-   - 處理藥局庫存資料
-
-3. 第三階段：使用者相關資料
-   - 處理使用者資料
-   - 處理歷史交易記錄
-
-#### B.3.3. 執行方式
-1. 透過啟動腳本自動執行：
-   ```bash
-   ./start.sh
-   ```
-
-2. 單獨執行 ETL：
-   ```bash
-   npm run etl
-   ```
-
-特色：
-- 支援資料去重和更新機制
-- 完整的錯誤處理和日誌記錄
-- 模組化設計，易於維護和擴展
-
 ## C. 本地開發指南
 
 ### C.1. 環境準備
@@ -118,25 +77,78 @@
    # 編輯 .env 檔案設定必要參數
    ```
 
-### C.2. 啟動專案
-1. 執行初始化腳本：
+### C.2. 專案啟動方式
+
+#### 方式一：使用啟動腳本（推薦）
+1. 賦予腳本執行權限：
    ```bash
    chmod +x start.sh
-   ./start.sh
    ```
-   此腳本會：
-   - 啟動 MySQL 容器
-   - 初始化資料庫結構
-   - 執行資料轉換與匯入
 
-2. 啟動應用服務：
+2. 啟動選項：
+   - 一般啟動（保留現有數據）：
+     ```bash
+     ./start.sh
+     ```
+   - 重新初始化數據後啟動：
+     ```bash
+     ./start.sh --reinit
+     ```
+
+   腳本會自動執行以下步驟：
+   - 檢查環境依賴
+   - 啟動 Docker 容器
+   - 初始化/重置數據庫（如使用 --reinit）
+   - 執行 ETL 流程（如需要）
+   - 啟動應用服務
+
+#### 方式二：手動執行（開發用）
+如果您想要更靈活地控制每個步驟，可以按照以下順序手動執行：
+
+1. Docker 環境準備：
+   - 停止並清理現有容器：
+     ```bash
+     docker-compose down
+     ```
+   - 如需重新初始化數據（清空所有數據）：
+     ```bash
+     docker-compose down -v  # 這會刪除所有數據卷
+     ```
+   - 啟動 Docker 容器：
+     ```bash
+     docker-compose up -d
+     ```
+   - 等待 MySQL 就緒（可以觀察 docker-compose logs）
+
+2. Node.js 環境準備：
    ```bash
    npm install
-   npm run start
    ```
 
-3. 訪問 API 文件：
-   - 打開瀏覽器訪問 http://localhost:3000/api-docs
+3. 數據初始化（如果需要）：
+   ```bash
+   npm run etl
+   ```
+
+4. 啟動應用（選擇其一）：
+   - 生產模式：
+     ```bash
+     npm run start
+     ```
+   - 開發模式（支援熱重載）：
+     ```bash
+     npm run dev
+     ```
+
+注意事項：
+- 手動執行時需要確保每個步驟都成功完成
+- 如果重新初始化了數據庫（使用 `down -v`），必須執行 ETL
+- 建議使用 `docker-compose logs` 檢查容器狀態
+- 如遇問題可查看 `logs` 目錄下的日誌文件
+
+### C.3. 訪問服務
+- API 服務：http://localhost:3000
+- API 文件：http://localhost:3000/api-docs
 
 ## D. 線上部署
 
