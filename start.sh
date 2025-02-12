@@ -78,17 +78,19 @@ echo "用戶名：${MYSQL_USER}"
 echo -e "\n當前數據庫表格："
 docker-compose exec -T mysql mysql -h"localhost" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" "${MYSQL_DATABASE}" -e "SHOW TABLES;"
 
-# 執行 ETL 流程（如果需要）
-if [ "$NEED_ETL" = true ]; then
-    echo "開始執行 ETL 流程..."
-    
-    # 先安裝 Node.js 依賴
+# 如果需要執行 ETL 或 node_modules 不存在，則安裝依賴
+if [ "$NEED_ETL" = true ] || [ ! -d "node_modules" ]; then
     echo "安裝 Node.js 依賴..."
     if ! npm install; then
         echo "錯誤：安裝 Node.js 依賴失敗"
         exit 1
     fi
+fi
 
+# 如果需要執行 ETL
+if [ "$NEED_ETL" = true ]; then
+    echo "開始執行 ETL 流程..."
+    
     # 創建日誌目錄
     mkdir -p logs/etl
 
@@ -113,4 +115,8 @@ if [ "$NEED_ETL" = true ]; then
     fi
 fi
 
-echo "系統初始化完成！" 
+# 創建應用日誌目錄
+mkdir -p logs
+
+echo "系統初始化完成！正在啟動應用程序..."
+npm start 
